@@ -5,15 +5,19 @@ threads = []
 users = []
 k = 0
 
+users_lock = threading.Lock()
+
 
 def process_user(client_connection, client_address):
     global users
     while True:
         message = client_connection.recv(1024)
 
-        for user in users:
-            if user != client_connection:
-                user.sendall(message)
+        with users_lock:
+            for user in users:
+                if user != client_connection:
+                    user.sendall(message)
+
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -27,12 +31,14 @@ while True:
     client_connection, client_address = server_socket.accept()
     print(f'Подключение от {client_address}')
 
-    users.append(client_connection)
+    with users_lock:
+        users.append(client_connection)
     k += 1
 
     name = client_connection.recv(1024).decode()
-    for user in users:
-        user.sendall(f"новый участник чата - {name}".encode())
+    with users_lock:
+        for user in users:
+            user.sendall(f"новый участник чата - {name}".encode())
 
     t = threading.Thread(target=process_user, args=(client_connection, client_address))
     t.start()
