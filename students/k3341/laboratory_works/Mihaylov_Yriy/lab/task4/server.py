@@ -1,7 +1,6 @@
 import socket
 import threading
 
-threads = []
 users = []
 k = 0
 

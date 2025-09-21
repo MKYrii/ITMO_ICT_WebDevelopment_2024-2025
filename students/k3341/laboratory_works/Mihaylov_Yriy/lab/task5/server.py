@@ -5,7 +5,6 @@ notes = {}
 
 def generate_html():
     global notes
-    """Генерирует HTML страницу с текущими оценками"""
     html_content = '''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,7 +51,7 @@ while True:
                 f"Content-Length: {len(html_content)}\r\n"
                 "\r\n" + html_content
         )
-        client_connection.send(response.encode('utf-8'))
+        client_connection.sendall(response.encode('utf-8'))
 
     elif request.startswith(b'POST'):
         lines = request.decode().split('\r\n')
@@ -70,14 +69,13 @@ while True:
                     discipline = param[11:]
                 elif param.startswith('mark='):
                     mark = param[5:]
-            print(discipline, mark)
             if discipline not in notes.keys():
                 notes[discipline] = []
             notes[discipline].append(mark)
 
         else:
             response = "HTTP/1.1 400 Bad Request\r\n\r\nОтсутствуют параметры discipline или mark"
-            client_connection.send(response.encode('utf-8'))
+            client_connection.sendall(response.encode('utf-8'))
             client_connection.close()
             continue
 
@@ -88,7 +86,7 @@ while True:
                 f"Content-Length: {len(html)}\r\n"
                 "\r\n" + html
         )
-        client_connection.send(response.encode('utf-8'))
+        client_connection.sendall(response.encode('utf-8'))
 
     else:
         response = "HTTP/1.1 405 Method Not Allowed\r\n\r\nMethod not supported"
